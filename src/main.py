@@ -74,6 +74,83 @@ class BSRSMain:
         else:
             print("❌ 無効な選択です。")
     
+    def select_theme_mode(self, config_data):
+        """テーマ選択モード"""
+        print("\n実行するテーマを選択してください:")
+        
+        # フェーズ設定を読み込み
+        import json
+        with open('config/phase_config.json', 'r', encoding='utf-8') as f:
+            all_phases = json.load(f)
+        
+        # すべてのテーマをリスト化
+        theme_list = []
+        for phase_name, phase_data in all_phases.items():
+            for theme_id, theme_info in phase_data['themes'].items():
+                theme_list.append({
+                    'phase': phase_name,
+                    'theme_id': theme_id,
+                    'name': theme_info['name'],
+                    'display': f"{theme_id}: {theme_info['name']} ({phase_data['name']})"
+                })
+        
+        # テーマを表示
+        for idx, theme in enumerate(theme_list, 1):
+            print(f"{idx}. {theme['display']}")
+        
+        choice = input(f"\n選択 (1-{len(theme_list)}): ")
+        
+        try:
+            idx = int(choice) - 1
+            if 0 <= idx < len(theme_list):
+                selected = theme_list[idx]
+                # 単一テーマの実行
+                self.controller.run_single_theme(
+                    config_data, 
+                    selected['phase'], 
+                    selected['theme_id']
+                )
+            else:
+                print("❌ 無効な選択です。")
+        except ValueError:
+            print("❌ 数字を入力してください。")
+
+    def quality_check_mode(self, config_data):
+        """品質チェックモード"""
+        print("\n品質チェックを実行します...")
+        
+        from pathlib import Path
+        from src.utils.validators import QualityChecker
+        
+        quality_checker = QualityChecker()
+        output_dir = Path('outputs') / config_data['project_name']
+        
+        if not output_dir.exists():
+            print("❌ まだレポートが生成されていません。")
+            return
+        
+        # すべてのレポートをチェック
+        all_reports = list(output_dir.rglob('*.md'))
+        issues_found = False
+        
+        for report_path in all_reports:
+            if '00_全体戦略サマリー' not in str(report_path):
+                result = quality_checker.check_report(report_path)
+                if not result['passed']:
+                    issues_found = True
+                    print(f"\n⚠️  {report_path.name}")
+                    for issue in result['issues']:
+                        print(f"   - {issue}")
+        
+        if not issues_found:
+            print("\n✅ すべてのレポートが品質基準を満たしています。")
+        else:
+            print("\n品質改善が必要なレポートがあります。")
+            retry = input("再実行しますか？ (y/n): ")
+            if retry.lower() == 'y':
+                # TODO: 品質基準を満たさないレポートのみ再実行
+                print("再実行機能は開発中です。")
+
     def run(self):
         """メイン実行"""
         self.interactive_mode()

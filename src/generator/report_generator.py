@@ -323,4 +323,50 @@ class ReportGenerator:
         with open(summary_path, 'w', encoding='utf-8') as f:
             f.write(summary_content)
         
-        print(f"\n✨ 全体サマリーレポート生成完了: {summary_path}") 
+        print(f"\n✨ 全体サマリーレポート生成完了: {summary_path}")
+
+    def create_phase_summaries(self, all_results):
+        """各フェーズのサマリー作成"""
+        summaries = []
+        
+        phase_names = {
+            'phase_1': 'フェーズI: 内部環境分析',
+            'phase_2': 'フェーズII: 外部環境分析',
+            'phase_3': 'フェーズIII: 顧客分析',
+            'phase_4': 'フェーズIV: GTM戦略',
+            'phase_5': 'フェーズV: グロース戦略',
+            'phase_6': 'フェーズVI: マーケティング',
+            'phase_7': 'フェーズVII: 組織基盤',
+            'phase_8': 'フェーズVIII: リスク管理',
+        }
+        
+        for phase_name, phase_title in phase_names.items():
+            if phase_name in all_results:
+                summary = f"\n### {phase_title}\n\n"
+                # 各テーマの主要な発見をまとめる
+                for theme_id, theme_data in all_results[phase_name].items():
+                    summary += f"- **{theme_id}**: [主要な発見]\n"
+                summaries.append(summary)
+        
+        return '\n'.join(summaries)
+
+    def create_integrated_strategy_map(self, all_results):
+        """統合戦略マップの作成"""
+        strategy_map = """
+```
+┌─────────────────────────────────────────────────┐
+│                 事業戦略全体像                   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│   内部環境 ──┐                                  │
+│             ├─→ 戦略立案 ──→ 実行計画         │
+│   外部環境 ──┘                                  │
+│                                                 │
+│   顧客理解 ────→ 価値提案 ──→ GTM戦略       │
+│                                                 │
+│   組織基盤 ────→ 実行支援 ──→ 成果測定     │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+"""
+        return strategy_map 

@@ -136,4 +136,51 @@ class ResearchController:
         self.report_generator.generate_summary_report(
             config_data=config_data,
             all_results=self.phase_results
-        ) 
+        )
+
+    def run_single_theme(self, config_data, phase_name, theme_id):
+        """単一テーマの実行"""
+        phase_config = self.load_phase_config(phase_name)
+        theme_info = phase_config['themes'].get(theme_id)
+        
+        if not theme_info:
+            print(f"❌ テーマ {theme_id} が見つかりません。")
+            return
+        
+        print(f"\n📝 {theme_id}: {theme_info['name']} を調査中...")
+        
+        # 3段階の深掘り調査
+        theme_results = []
+        for step in range(1, 4):
+            previous_results = self.get_previous_results(phase_name, theme_id)
+            
+            result = self.research_engine.execute_research(
+                config_data=config_data,
+                phase_name=phase_name,
+                theme_id=theme_id,
+                step=step,
+                previous_results=previous_results,
+                theme_results=theme_results
+            )
+            
+            theme_results.append(result)
+            print(f"  ✓ ステップ {step}/3 完了")
+            time.sleep(1)
+        
+        # レポート生成
+        report_path = self.report_generator.generate_theme_report(
+            config_data=config_data,
+            phase_name=phase_name,
+            theme_id=theme_id,
+            theme_info=theme_info,
+            results=theme_results
+        )
+        
+        # 品質チェック
+        quality_result = self.quality_checker.check_report(report_path)
+        if quality_result['passed']:
+            print(f"  ✅ 品質チェック合格")
+        else:
+            print(f"  ⚠️  品質チェック要改善: {quality_result['issues']}")
+        
+        print(f"\n✅ 調査完了: {report_path}") 

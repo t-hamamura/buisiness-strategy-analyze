@@ -207,4 +207,31 @@ Web検索を積極的に活用し、最新かつ信頼性の高い情報を収�
             '2': 'デロイトのリスク管理コンサルタント',
             # ... 他のテーマの役割
         }
-        return roles.get(theme_id, '戦略コンサルタント') 
+        return roles.get(theme_id, '戦略コンサルタント')
+
+    def add_previous_context(self, prompt, theme_results):
+        """前のステップの結果をプロンプトに追加"""
+        if not theme_results:
+            return prompt
+        
+        context = "\n\n## 前のステップの分析結果\n\n"
+        for idx, result in enumerate(theme_results, 1):
+            context += f"### ステップ{idx}の要約\n"
+            # 結果の最初の500文字を抽出
+            summary = result.get('result', '')[:500]
+            context += f"{summary}...\n\n"
+        
+        return prompt.replace('{previous_context}', context)
+
+    def add_phase_context(self, prompt, previous_results):
+        """前フェーズの結果をプロンプトに追加"""
+        if not previous_results:
+            return prompt
+        
+        context = "\n\n## 関連する前フェーズの分析結果\n\n"
+        # 前フェーズの要約を追加（簡易版）
+        context += "前フェーズの分析により、以下の重要な知見が得られています：\n"
+        context += "- [前フェーズの重要な発見]\n"
+        context += "- [関連する戦略的示唆]\n\n"
+        
+        return prompt + context 
