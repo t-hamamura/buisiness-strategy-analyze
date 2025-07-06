@@ -13,40 +13,30 @@ class BSRSMain:
         self.controller = ResearchController()
     
     def interactive_mode(self):
-        """対話モードでの実行"""
-        print("🎯 Business Strategy Research System へようこそ！")
-        print("-" * 50)
-        
-        # 設定ファイルの確認
-        config_file = self.config_reader.find_config_file()
-        if not config_file:
-            print("❌ 事前調査ファイルが見つかりません。")
-            print("💡 templates/research_config_template.md をコピーして")
-            print("   必要事項を記入し、project_config.md として保存してください。")
-            return
-        
-        print(f"✅ 設定ファイルを読み込みました: {config_file}")
-        config_data = self.config_reader.load_config(config_file)
-        
-        # 実行モードの選択
-        print("\n実行モードを選択してください:")
-        print("1. 全体調査を実行")
-        print("2. フェーズを選択して実行")
-        print("3. テーマを選択して実行")
-        print("4. 品質チェックと再実行")
-        
-        choice = input("\n選択 (1-4): ")
-        
-        if choice == "1":
-            self.controller.run_full_research(config_data)
-        elif choice == "2":
-            self.select_phase_mode(config_data)
-        elif choice == "3":
-            self.select_theme_mode(config_data)
-        elif choice == "4":
-            self.quality_check_mode(config_data)
-        else:
-            print("❌ 無効な選択です。")
+        """対話モードの実行（エラーハンドリング・テンプレート自動コピー付き）"""
+        import shutil
+        from pathlib import Path
+        print("\n--- 対話モード開始 ---\n")
+        try:
+            # テンプレート自動コピー
+            template_dir = Path('templates')
+            prompts_dir = Path('prompts')
+            if template_dir.exists():
+                for item in template_dir.glob('**/*'):
+                    rel_path = item.relative_to(template_dir)
+                    dest = prompts_dir / rel_path
+                    if item.is_file() and not dest.exists():
+                        dest.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy(item, dest)
+                        print(f"テンプレート {rel_path} を prompts/ にコピーしました")
+            
+            # 既存のテーマ・フェーズ選択処理
+            self.select_theme_and_phase()
+        except Exception as e:
+            print(f"[エラー] 対話モードで問題が発生しました: {e}")
+            import traceback
+            traceback.print_exc()
+        print("\n--- 対話モード終了 ---\n")
     
     def select_phase_mode(self, config_data):
         """フェーズ選択モード"""

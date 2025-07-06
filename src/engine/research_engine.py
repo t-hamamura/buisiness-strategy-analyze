@@ -136,27 +136,55 @@ Web検索を活用して最新の情報を収集し、深い分析を行って�
         return prompt
     
     def execute_with_cursor_ai(self, prompt):
-        """Cursor AIでの実行（実際の実装ではCursorのAPIを使用）"""
-        # この部分は実際のCursor環境で実行される
-        instruction = f"""
-以下の調査プロンプトを実行し、詳細なレポートを作成してください。
-Web検索を積極的に活用し、最新かつ信頼性の高い情報を収集してください。
-
+        """Cursor AIでの実行（対話的実行）"""
+        print("\n" + "="*80)
+        print("📋 以下の内容をCursorのチャット欄にコピーして実行してください：")
+        print("="*80)
+        
+        cursor_prompt = f"""
 {prompt}
 
-出力形式：
-- マークダウン形式
-- 明確な見出し構造
-- 引用と出典の明記（脚注形式）
-- 可能な限り図表を含める
+【重要な指示】
+1. 必ずWeb検索を積極的に活用して、2024年の最新情報を収集してください
+2. 最低10個以上の信頼できる情報源を引用してください
+3. 具体的な数値データを含めてください
+4. 可能な限り図表を作成してください（テキストベースでOK）
+
+出力は必ずマークダウン形式で、以下の構造にしてください：
+- 明確な見出し（#, ##, ###）
+- 箇条書き（-, *）
+- 表形式のデータ（|表|形式|）
+- 引用元の明記 [1], [2]...
+
+調査完了後、結果全体をコピーして返してください。
 """
         
-        # Cursor AIの応答を待つ（この部分は擬似コード）
-        print("\n⏳ Cursor AIが調査を実行中... (Autoモードで実行)")
-        print("💡 ヒント: Web検索を活用して深い分析を行います")
+        print(cursor_prompt)
+        print("="*80)
         
-        # 実際にはCursorのAuto機能が動作
-        result = "[Cursor AIの実行結果がここに入ります]"
+        print("\n⏸  Cursorで調査を実行してください...")
+        print("💡 ヒント: 上記のプロンプト全体をコピーして、Cursorのチャット欄に貼り付けてください")
+        print("📌 Web検索ボタンをクリックして有効にすることを忘れずに！")
+        
+        input("\n✅ 調査が完了したらEnterキーを押してください...")
+        
+        print("\n📝 調査結果を入力してください（終了は Ctrl+D または Ctrl+Z）：")
+        lines = []
+        try:
+            while True:
+                line = input()
+                lines.append(line)
+        except EOFError:
+            pass
+        
+        result = '\n'.join(lines)
+        
+        # 結果を一時ファイルに保存
+        temp_file = Path('temp_result.md')
+        with open(temp_file, 'w', encoding='utf-8') as f:
+            f.write(result)
+        
+        print(f"\n💾 結果を保存しました: {temp_file}")
         
         return result
     
