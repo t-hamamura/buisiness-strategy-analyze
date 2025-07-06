@@ -1,0 +1,45 @@
+# 命令書：{{ phase_name }} - {{ step_title }}
+
+{% if role %}
+あなたは、{{ role }}です。
+{% endif %}
+
+{% if analysis_purpose %}
+## 分析の目的
+{{ analysis_purpose }}
+{% endif %}
+
+{% if survey_instructions %}
+## 調査指示
+{{ survey_instructions }}
+{% endif %}
+
+{% if context_reference %}
+## 参照コンテキスト
+### ▼▼▼ 以下に、{{ previous_phase }}で生成されたレポートをそのまま貼り付けてください ▼▼▼
+
+### ▲▲▲ {{ previous_phase }}のレポートここまで ▲▲▲
+{% endif %}
+
+{% if analysis_instructions %}
+## {{ analysis_instructions_title }}
+{{ analysis_instructions }}
+{% endif %}
+
+{% if required_outputs %}
+## 必須成果物
+{% for output in required_outputs %}
+- {{ output }}
+{% endfor %}
+{% endif %}
+
+{% if notes %}
+## 注意事項
+{% for note in notes %}
+- {{ note }}
+{% endfor %}
+{% endif %}
+
+{% if web_search_note %}
+Web検索を積極的に活用し、業界のベストプラクティスと比較してください。
+{% endif %} 
