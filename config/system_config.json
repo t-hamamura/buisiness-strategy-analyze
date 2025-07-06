@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "research_phases": 8,
+  "themes_per_phase": {
+    "phase_1": 2,
+    "phase_2": 4,
+    "phase_3": 3,
+    "phase_4": 5,
+    "phase_5": 3,
+    "phase_6": 11,
+    "phase_7": 6,
+    "phase_8": 3,
+    "final_phase": 1
+  },
+  "output_format": "markdown",
+  "web_search": {
+    "enabled": true,
+    "max_results": 15,
+    "timeout": 30
+  },
+  "quality_check": {
+    "min_sources": 10,
+    "min_word_count": 3000,
+    "required_sections": [
+      "概要",
+      "詳細分析",
+      "戦略提言",
+      "参考文献"
+    ]
+  }
+}
