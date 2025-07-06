@@ -106,59 +106,31 @@ buisiness-strategy-analyze/
 
 ## 🛠️ セットアップ（初めての方向け）
 
-### 前提条件
-- **Python 3.9以上**がインストールされていること
-- **Cursor**がインストールされていること（[cursor.sh](https://cursor.sh/)からダウンロード）
-- インターネット接続環境
-
 ### 1. リポジトリの取得
-
 ```bash
-# リポジトリをクローン（またはZIPダウンロード）
 git clone https://github.com/t-hamamura/buisiness-strategy-analyze.git
 cd buisiness-strategy-analyze
 ```
 
 ### 2. Python環境の準備
-
 ```bash
-# Pythonバージョンを確認（3.9以上が必要）
-python --version
-
-# 仮想環境を作成
 python -m venv venv
-
-# 仮想環境を有効化
-# macOS/Linuxの場合：
-source venv/bin/activate
-# Windowsの場合：
-venv\Scripts\activate
-
-# 依存パッケージをインストール（約1分）
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. システムの初期化
-
+### 3. 初期設定（自動）
 ```bash
-# 初回セットアップを実行
-python run_research.py
+python setup.py
 ```
+**→ これで必要なファイルがすべて自動生成されます！**
 
-**初回実行時の動作：**
-1. 自動的に必要なフォルダが作成されます
-2. 設定ファイルが生成されます
-3. プロンプトファイル（108個）が自動生成されます
-4. 「実行モードを選択してください」と表示されたら、一旦 **Ctrl+C** で終了
+### 4. プロジェクト設定
+`project_config.md.example`をコピーして`project_config.md`を作成し、必要事項を記入してください。
 
-### 4. プロジェクト設定ファイルの作成
-
+### 5. 調査の開始
 ```bash
-# テンプレートをコピーして設定ファイルを作成
-cp project_config.md.example project_config.md
-
-# または手動で作成（Windowsの場合）
-copy project_config.md.example project_config.md
+python run_research.py
 ```
 
 **project_config.md を編集：**（テキストエディタで開いて編集）

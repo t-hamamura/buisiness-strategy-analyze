@@ -113,6 +113,13 @@ class SystemSetup:
         print("✅ 設定ファイルを作成しました")
         self.create_template_files()
         print("✅ テンプレートファイルを作成しました")
+        
+        # プロンプトファイルの自動生成を追加
+        print("📝 プロンプトファイルを生成中...")
+        from create_prompts import PromptCreator
+        prompt_creator = PromptCreator()
+        prompt_creator.create_all_prompts()
+        
         print("✨ セットアップが完了しました！")
 
 if __name__ == "__main__":

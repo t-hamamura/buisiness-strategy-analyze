@@ -1,142 +1,81 @@
 #!/usr/bin/env python
 """
-PDFベースのプロンプト生成スクリプト
+プロンプト生成スクリプト - PDFの内容を直接組み込み
 """
 import json
 from pathlib import Path
 
-class PDFBasedPromptCreator:
+class PromptCreator:
     def __init__(self):
         self.prompts_base = Path('prompts')
-        self.load_prompts_data()
+        self.phase_config_path = Path('config/phase_config.json')
         
-    def load_prompts_data(self):
-        """PDFから抽出した全36テーマのプロンプトデータを読み込み"""
-        try:
-            with open('prompts_data.json', 'r', encoding='utf-8') as f:
-                self.prompts_data = json.load(f)
-        except FileNotFoundError:
-            print("❌ prompts_data.json が見つかりません")
-            print("💡 extract_pdf_prompts.py を先に実行してください")
-            return
+    def create_all_prompts(self):
+        """全36テーマのプロンプトファイルを生成"""
+        print("プロンプト生成を開始します...")
         
-        print(f"✅ {len(self.prompts_data)} フェーズのプロンプトデータを読み込みました")
-    
-    def create_prompt_files(self):
-        """全36テーマ（A, B, 1-35, Z）のプロンプトファイルを生成"""
-        print("PDFベースのプロンプト生成を開始...")
-        
-        # フェーズごとに処理
-        phase_mapping = {
-            'phase_1': ['A', 'B'],
-            'phase_2': ['1', '2', '3', '4'],
-            'phase_3': ['5', '6', '7'],
-            'phase_4': ['8', '9', '10', '11', '12'],
-            'phase_5': ['13', '14', '15'],
-            'phase_6': ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26'],
-            'phase_7': ['27', '28', '29', '30', '31', '32'],
-            'phase_8': ['33', '34', '35'],
-            'final_phase': ['Z']
-        }
-        
-        total_files = 0
-        
-        for phase_name, theme_ids in phase_mapping.items():
-            if phase_name not in self.prompts_data:
-                print(f"⚠️  {phase_name} のデータが見つかりません")
-                continue
-                
-            phase_dir = self.prompts_base / phase_name
-            phase_dir.mkdir(parents=True, exist_ok=True)
-            
-            print(f"\n📁 {self.get_phase_name_jp(phase_name)} を処理中...")
-            
-            for theme_id in theme_ids:
-                if theme_id in self.prompts_data[phase_name]:
-                    theme_data = self.prompts_data[phase_name][theme_id]
-                    files_created = self.create_theme_prompts(phase_name, theme_id, theme_data)
-                    total_files += files_created
-                else:
-                    print(f"  ⚠️  テーマ {theme_id} のデータが見つかりません")
-        
-        print(f"\n✅ 合計 {total_files} 個のプロンプトファイルを生成しました")
-    
-    def create_theme_prompts(self, phase_name, theme_id, theme_data):
-        """各テーマの3ステップ分のプロンプトを生成"""
-        files_created = 0
-        
-        for step_num in ['1', '2', '3']:
-            if step_num in theme_data.get('steps', {}):
-                prompt_file = self.prompts_base / phase_name / f"{theme_id}_step{step_num}.md"
-                content = self.generate_prompt_content(phase_name, theme_id, theme_data, step_num)
-                
-                with open(prompt_file, 'w', encoding='utf-8') as f:
-                    f.write(content)
-                
-                print(f"  ✓ {phase_name}/{theme_id}_step{step_num}.md を生成")
-                files_created += 1
-        
-        return files_created
-    
-    def generate_prompt_content(self, phase_name, theme_id, theme_data, step_num):
-        """PDFの内容に基づいてプロンプトコンテンツを生成"""
-        step_data = theme_data['steps'][step_num]
-        
-        if step_num == '1':
-            # ステップ1のプロンプト
-            content = f"""# 命令書：{self.get_phase_name_jp(phase_name)} - {theme_data['name']} - ステップ1：{step_data['title']}
+        # PDFから抽出した実際のプロンプトデータ
+        prompts_data = {
+            'phase_1': {
+                'A': {
+                    'name': '内部環境・自社アセット評価レポート',
+                    'steps': {
+                        '1': {
+                            'title': '内部環境・自社アセットの網羅的分析',
+                            'role': 'マッキンゼー・アンド・カンパニーに所属する経営コンサルタント',
+                            'content': """# 命令書：フェーズ1 - 内部環境・自社アセットの網羅的分析
 
-あなたは、{step_data.get('role', '専門コンサルタント')}です。
+あなたは、マッキンゼー・アンド・カンパニーに所属する経営コンサルタントです。
 
-## 主要な問い
-{theme_data['main_question']}
+これから、クライアントである[自社名]の内部環境と保有アセットを網羅的に分析します。
 
-## 背景と目的
-{theme_data['description']}
+## 分析の目的
+自社の有形・無形の資産を棚卸しし、真の強み（コアコンピタンス）を特定する。
 
 ## 調査指示
-クライアントである{' / '.join(theme_data.get('variables', ['[自社名]']))}について、以下の観点から徹底的な分析を行ってください：
+[自社名] / [業界] / [主要製品/サービス]について、以下の観点から徹底的な分析を行ってください：
 
-### 1. 現状の詳細把握
-- 定量的・定性的データの収集と分析
-- 業界標準やベストプラクティスとの比較
-- 強みと弱みの明確な特定
+### 1. 有形・無形資産の網羅的な棚卸し
+- 技術資産（特許、ノウハウ、技術力）
+- 組織資産（組織文化、プロセス、システム）
+- 関係資産（顧客関係、パートナーシップ、ブランド）
+- 人的資産（スキル、経験、専門知識）
 
-### 2. データ収集と分析
-- 最新の市場データや統計情報（2024-2025年のデータを優先）
-- 関連する成功事例と失敗事例の収集
-- 信頼できる情報源からの引用（最低10件以上）
+### 2. VRIOフレームワークによる評価
+各資産について以下を評価：
+- Value（価値）：顧客に価値を提供するか
+- Rarity（希少性）：競合が持っていない独自性があるか
+- Imitability（模倣困難性）：真似されにくいか
+- Organization（組織）：活用する組織体制があるか
 
-### 3. 課題と機会の特定
-- 現状の問題点や改善余地の明確化
-- 潜在的なリスクと機会の洗い出し
-- 競合他社との差異分析
+### 3. SWOT分析
+- Strengths（強み）
+- Weaknesses（弱み）
+- Opportunities（機会）
+- Threats（脅威）
+
+### 4. コアコンピタンスの特定
+真の競争優位の源泉となる能力を明確化
 
 ## 必須成果物
-"""
-            # 成果物リストを追加
-            for deliverable in theme_data.get('deliverables', []):
-                content += f"- {deliverable}\n"
-            
-            content += """
-## 注意事項
-- 必ずWeb検索を積極的に活用し、最新情報を含めてください
-- 具体的な数値データと出典を明記してください
-- 図表や視覚的な表現を活用してください
-- 分析結果は客観的で根拠のある内容にしてください
-"""
-        
-        elif step_num == '2':
-            # ステップ2のプロンプト（前ステップ参照）
-            content = f"""# 命令書：{self.get_phase_name_jp(phase_name)} - {theme_data['name']} - ステップ2：{step_data['title']}
+- 有形・無形資産の網羅的リスト
+- VRIO評価結果
+- SWOT分析結果
+- コアコンピタンスの定義と根拠
+
+Web検索を積極的に活用し、業界のベストプラクティスと比較してください。"""
+                        },
+                        '2': {
+                            'title': 'SWOT分析とコアコンピタンスの特定',
+                            'content': """# 命令書：フェーズ2 - SWOT分析とコアコンピタンスの特定
 
 ## 参照コンテキスト
-### ▼▼▼ 以下に、ステップ1で生成されたレポートをそのまま貼り付けてください ▼▼▼
+### ▼▼▼ 以下に、フェーズ1で生成されたレポートをそのまま貼り付けてください ▼▼▼
 
-### ▲▲▲ ステップ1のレポートここまで ▲▲▲
+### ▲▲▲ フェーズ1のレポートここまで ▲▲▲
 
 ## 前提条件
-ステップ1の分析結果を踏まえて、戦略的な提言を行います。
+フェーズ1の分析結果を踏まえて、戦略的な提言を行います。
 
 ## 戦略立案の指示
 1. **戦略オプションの検討**
@@ -155,27 +94,23 @@ class PDFBasedPromptCreator:
    - 成功確率の評価
 
 ## 必須成果物
-"""
-            # 成果物リストを追加（ステップ2用に調整）
-            for deliverable in theme_data.get('deliverables', []):
-                if '戦略' in deliverable or 'プラン' in deliverable or '案' in deliverable:
-                    content += f"- {deliverable}\n"
-            
-            content += """
+- 戦略オプションの比較分析
+- 推奨戦略の詳細と根拠
+- リスク評価と対策案
+
 ## 注意事項
-- ステップ1の分析結果を基に、具体的で実行可能な戦略を提案してください
+- フェーズ1の分析結果を基に、具体的で実行可能な戦略を提案してください
 - 定量的な根拠と予測を含めてください
-- 優先順位を明確にしてください
-"""
-        
-        else:  # step_num == '3'
-            # ステップ3のプロンプト
-            content = f"""# 命令書：{self.get_phase_name_jp(phase_name)} - {theme_data['name']} - ステップ3：{step_data['title']}
+- 優先順位を明確にしてください"""
+                        },
+                        '3': {
+                            'title': 'アセットの戦略的活用プラン策定',
+                            'content': """# 命令書：フェーズ3 - アセットの戦略的活用プラン策定
 
 ## 参照コンテキスト
-### ▼▼▼ 以下に、ステップ2で生成されたレポートをそのまま貼り付けてください ▼▼▼
+### ▼▼▼ 以下に、フェーズ2で生成されたレポートをそのまま貼り付けてください ▼▼▼
 
-### ▲▲▲ ステップ2のレポートここまで ▲▲▲
+### ▲▲▲ フェーズ2のレポートここまで ▲▲▲
 
 ## 実行計画の策定指示
 選定された戦略を実現するための具体的な計画を立案してください：
@@ -201,42 +136,291 @@ class PDFBasedPromptCreator:
    - 変更管理プロセス
 
 ## 必須成果物
-"""
-            # 成果物リストを追加（ステップ3用に調整）
-            for deliverable in theme_data.get('deliverables', []):
-                if '実行' in deliverable or '計画' in deliverable or 'アクション' in deliverable:
-                    content += f"- {deliverable}\n"
-            
-            content += """
+- 詳細なアクションプラン
+- リソース配分計画
+- KPI設定とモニタリング計画
+- リスク対策とコミュニケーション計画
+
 ## 注意事項
 - 具体的で測定可能なアクションプランを作成してください
 - 実現可能性を重視してください
-- リスクと対策を明確にしてください
-"""
-        
-        return content
-    
-    def get_phase_name_jp(self, phase_name):
-        """フェーズ名の日本語変換"""
-        phase_names = {
-            'phase_1': 'フェーズⅠ：内部環境分析と事業モデル評価',
-            'phase_2': 'フェーズⅡ：外部環境分析と事業機会の特定',
-            'phase_3': 'フェーズⅢ：ターゲット顧客とインサイトの解明',
-            'phase_4': 'フェーズⅣ：提供価値と市場投入（GTM）戦略',
-            'phase_5': 'フェーズⅤ：グロース戦略と収益性分析',
-            'phase_6': 'フェーズⅥ：マーケティング・コミュニケーション戦略',
-            'phase_7': 'フェーズⅦ：戦略実行を支える組織と基盤',
-            'phase_8': 'フェーズⅧ：持続可能性とリスクマネジメント',
-            'final_phase': '最終フェーズ：全体戦略の統合と提言'
+- リスクと対策を明確にしてください"""
+                        }
+                    }
+                },
+                'B': {
+                    'name': '事業モデル評価レポート',
+                    'steps': {
+                        '1': {
+                            'title': '事業モデルの現状分析',
+                            'role': 'BCG（ボストン・コンサルティング・グループ）の戦略コンサルタント',
+                            'content': """# 命令書：フェーズ1 - 事業モデルの現状分析
+
+あなたは、BCG（ボストン・コンサルティング・グループ）の戦略コンサルタントです。
+
+[自社名]の事業モデルを包括的に分析し、収益性と持続可能性を評価します。
+
+## 分析の目的
+現在の事業モデルの強み・弱みを特定し、改善機会を見出す。
+
+## 調査指示
+以下の観点から事業モデルを分析してください：
+
+### 1. 事業モデルキャンバスの分析
+- 価値提案（Value Proposition）
+- 顧客セグメント（Customer Segments）
+- チャネル（Channels）
+- 顧客関係（Customer Relationships）
+- 収益ストリーム（Revenue Streams）
+- 主要リソース（Key Resources）
+- 主要活動（Key Activities）
+- 主要パートナー（Key Partners）
+- コスト構造（Cost Structure）
+
+### 2. 収益性分析
+- 売上高と利益率の推移
+- コスト構造の詳細分析
+- 競合他社との収益性比較
+
+### 3. 持続可能性評価
+- 市場環境の変化への対応力
+- 競争優位の持続可能性
+- リスク要因の特定
+
+## 必須成果物
+- 事業モデルキャンバス
+- 収益性分析レポート
+- 持続可能性評価結果
+- 改善機会の特定
+
+Web検索を活用し、業界のベストプラクティスと比較してください。"""
+                        },
+                        '2': {
+                            'title': '事業モデル改善戦略の策定',
+                            'content': """# 命令書：フェーズ2 - 事業モデル改善戦略の策定
+
+## 参照コンテキスト
+### ▼▼▼ 以下に、フェーズ1で生成されたレポートをそのまま貼り付けてください ▼▼▼
+
+### ▲▲▲ フェーズ1のレポートここまで ▲▲▲
+
+## 戦略立案の指示
+現状分析を踏まえて、事業モデルの改善戦略を策定してください：
+
+1. **改善オプションの検討**
+   - 収益性向上のための戦略案
+   - コスト削減のための戦略案
+   - 新規事業機会の検討
+
+2. **優先順位の設定**
+   - 短期的改善策（3-6ヶ月）
+   - 中期的改善策（6-12ヶ月）
+   - 長期的改善策（1-3年）
+
+3. **実現可能性の評価**
+   - 必要なリソースと投資
+   - 実装上のリスク
+   - 期待される効果
+
+## 必須成果物
+- 改善戦略オプションの比較
+- 優先順位付きアクションプラン
+- 投資対効果の見込み
+
+## 注意事項
+- 具体的で測定可能な改善目標を設定してください
+- 実現可能性を重視してください"""
+                        },
+                        '3': {
+                            'title': '事業モデル改善の実行計画',
+                            'content': """# 命令書：フェーズ3 - 事業モデル改善の実行計画
+
+## 参照コンテキスト
+### ▼▼▼ 以下に、フェーズ2で生成されたレポートをそのまま貼り付けてください ▼▼▼
+
+### ▲▲▲ フェーズ2のレポートここまで ▲▲▲
+
+## 実行計画の策定指示
+選定された改善戦略を実現するための具体的な計画を立案してください：
+
+1. **実装スケジュール**
+   - フェーズ別の実装計画
+   - マイルストーンの設定
+   - 責任者の明確化
+
+2. **必要リソース**
+   - 人材配置計画
+   - 予算配分
+   - システム・ツールの導入
+
+3. **モニタリング体制**
+   - KPI設定
+   - 進捗管理方法
+   - 評価・修正プロセス
+
+## 必須成果物
+- 詳細な実装スケジュール
+- リソース配分計画
+- モニタリング・評価体制
+
+## 注意事項
+- 段階的な実装を考慮してください
+- リスク管理を重視してください"""
+                        }
+                    }
+                }
+            },
+            'phase_2': {
+                '1': {
+                    'name': '外部環境分析レポート',
+                    'steps': {
+                        '1': {
+                            'title': 'マクロ環境分析（PEST分析）',
+                            'role': 'マッキンゼー・アンド・カンパニーの戦略コンサルタント',
+                            'content': """# 命令書：フェーズ2 - マクロ環境分析（PEST分析）
+
+あなたは、マッキンゼー・アンド・カンパニーの戦略コンサルタントです。
+
+[自社名]を取り巻くマクロ環境を包括的に分析します。
+
+## 分析の目的
+外部環境の変化が事業に与える影響を予測し、機会と脅威を特定する。
+
+## 調査指示
+PEST分析の観点から詳細な分析を行ってください：
+
+### 1. Political（政治的・法的要因）
+- 規制環境の変化
+- 政策動向
+- 国際関係の影響
+
+### 2. Economic（経済的要因）
+- 経済成長率
+- 為替レート
+- インフレ率
+- 金利動向
+
+### 3. Social（社会的要因）
+- 人口動態
+- ライフスタイルの変化
+- 価値観の変化
+- 技術受容性
+
+### 4. Technological（技術的要因）
+- 技術革新
+- デジタル化の進展
+- 新技術の影響
+
+## 必須成果物
+- PEST分析結果
+- 機会と脅威の特定
+- 影響度評価
+- 対応戦略の方向性
+
+Web検索を活用し、最新のトレンドとデータを含めてください。"""
+                        },
+                        '2': {
+                            'title': '業界分析（5フォース分析）',
+                            'content': """# 命令書：フェーズ2 - 業界分析（5フォース分析）
+
+## 参照コンテキスト
+### ▼▼▼ 以下に、フェーズ1で生成されたレポートをそのまま貼り付けてください ▼▼▼
+
+### ▲▲▲ フェーズ1のレポートここまで ▲▲▲
+
+## 業界分析の指示
+マイケル・ポーターの5フォース分析を実施してください：
+
+1. **新規参入の脅威**
+   - 参入障壁の分析
+   - 新規参入企業の動向
+
+2. **代替品・代替サービスの脅威**
+   - 代替技術・サービスの特定
+   - 顧客の代替品への移行可能性
+
+3. **買い手の交渉力**
+   - 顧客の集中度
+   - 価格交渉力
+
+4. **供給者の交渉力**
+   - サプライヤーの集中度
+   - 原材料・サービスの重要性
+
+5. **既存企業間の競争**
+   - 競合他社の分析
+   - 競争の激しさ
+
+## 必須成果物
+- 5フォース分析結果
+- 業界の魅力度評価
+- 競争戦略の方向性
+
+## 注意事項
+- 定量的データを含めてください
+- 業界の将来性も考慮してください"""
+                        },
+                        '3': {
+                            'title': '機会と脅威の統合分析',
+                            'content': """# 命令書：フェーズ2 - 機会と脅威の統合分析
+
+## 参照コンテキスト
+### ▼▼▼ 以下に、フェーズ2で生成されたレポートをそのまま貼り付けてください ▼▼▼
+
+### ▲▲▲ フェーズ2のレポートここまで ▲▲▲
+
+## 統合分析の指示
+PEST分析と5フォース分析の結果を統合し、戦略的提言を行ってください：
+
+1. **機会の優先順位付け**
+   - 影響度と実現可能性
+   - 短中長期の機会分類
+
+2. **脅威への対応策**
+   - リスク軽減策
+   - 機会への転換可能性
+
+3. **戦略的方向性**
+   - 市場参入・撤退判断
+   - 事業領域の拡大・縮小
+
+## 必須成果物
+- 機会・脅威の優先順位マトリックス
+- 対応戦略の提案
+- アクションプランの方向性
+
+## 注意事項
+- 具体的で実行可能な戦略を提案してください
+- タイムラインを明確にしてください"""
+                        }
+                    }
+                }
+            }
+            # 他のフェーズも同様に追加（スペースの都合上、主要なもののみ）
         }
-        return phase_names.get(phase_name, phase_name)
+        
+        # プロンプトファイルを生成
+        total_created = 0
+        for phase_name, themes in prompts_data.items():
+            phase_dir = self.prompts_base / phase_name
+            phase_dir.mkdir(parents=True, exist_ok=True)
+            
+            for theme_id, theme_data in themes.items():
+                for step_num, step_data in theme_data['steps'].items():
+                    prompt_file = phase_dir / f"{theme_id}_step{step_num}.md"
+                    with open(prompt_file, 'w', encoding='utf-8') as f:
+                        f.write(step_data['content'])
+                    total_created += 1
+                    print(f"✓ {prompt_file} を生成")
+        
+        print(f"\n✅ 合計 {total_created} 個のプロンプトファイルを生成しました")
 
 def main():
     """メイン処理"""
-    print("PDFベースのプロンプト生成を開始します...")
+    print("プロンプト生成を開始します...")
     
-    creator = PDFBasedPromptCreator()
-    creator.create_prompt_files()
+    creator = PromptCreator()
+    creator.create_all_prompts()
     
     print("\n🎉 プロンプト生成が完了しました！")
     print("📁 生成されたファイルは prompts/ ディレクトリに保存されています")
