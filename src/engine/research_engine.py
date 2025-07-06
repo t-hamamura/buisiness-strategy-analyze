@@ -119,15 +119,33 @@ Web検索を活用して最新の情報を収集し、深い分析を行って�
         )
     
     def replace_variables(self, prompt, config_data):
-        """プロンプト内の変数を置換"""
+        """PDFで定義されたすべての変数を置換"""
+        # 基本変数
         replacements = {
             '[自社名]': config_data.get('company_name', ''),
-            '{company}': config_data.get('company_name', ''),
             '[業界]': config_data.get('industry', ''),
+            '[主要製品/サービス]': config_data.get('product_service', ''),
             '[製品/サービス]': config_data.get('product_service', ''),
+            '[自社製品/サービス]': config_data.get('product_service', ''),
+            '[製品/サービス名]': config_data.get('product_service', ''),
             '[対象市場]': config_data.get('target_market', ''),
+            '[市場]': config_data.get('target_market', ''),
+            '[ターゲット市場]': config_data.get('target_market', ''),
+            '[国・地域]': config_data.get('region', ''),
             '[競合企業]': ', '.join(config_data.get('competitors', [])),
+            '[競合]': ', '.join(config_data.get('competitors', [])),
             '[ターゲット顧客]': config_data.get('target_customer', ''),
+            '[分析対象とする主要な顧客ペルソナ]': config_data.get('persona', ''),
+            '[新機能や新製品のアイデア]': config_data.get('new_product_idea', ''),
+            '[想定するターゲットユーザー]': config_data.get('target_user', ''),
+            '[候補国]': config_data.get('candidate_countries', ''),
+            '[ブランド名]': config_data.get('brand_name', config_data.get('company_name', '')),
+            '[自社/事業部]': config_data.get('division', config_data.get('company_name', '')),
+            '[計測可能な最重要目標]': config_data.get('main_goal', ''),
+            '[総予算額]': config_data.get('budget', ''),
+            '[キャンペーン目的]': config_data.get('campaign_objective', ''),
+            '[テーマ]': config_data.get('theme', ''),
+            '[目的]': config_data.get('objective', '')
         }
         
         for key, value in replacements.items():
@@ -227,12 +245,26 @@ Web検索を活用して最新の情報を収集し、深い分析を行って�
         return sources
     
     def get_role_for_theme(self, theme_id):
-        """テーマに応じた役割を返す"""
+        """各テーマに対応する専門的な役割を返す"""
+        try:
+            with open('prompts_data.json', 'r', encoding='utf-8') as f:
+                prompts_data = json.load(f)
+            
+            # 全フェーズから該当テーマを検索
+            for phase_data in prompts_data.values():
+                if theme_id in phase_data:
+                    return phase_data[theme_id]['steps']['1'].get('role', '専門コンサルタント')
+        except (FileNotFoundError, KeyError, json.JSONDecodeError):
+            pass
+        
+        # フォールバック用の役割マッピング
         roles = {
             'A': 'マッキンゼーの経営コンサルタント',
             'B': 'ビジネスモデルイノベーションの専門家',
             '1': 'IDCのシニアマーケットアナリスト',
-            '2': 'デロイトのリスク管理コンサルタント',
+            '2': '競合分析を専門とする戦略コンサルタント',
+            '3': '業界分析を専門とするテクノロジーアナリスト',
+            '4': 'マクロ経済分析を専門とするエコノミスト',
             # ... 他のテーマの役割
         }
         return roles.get(theme_id, '戦略コンサルタント')

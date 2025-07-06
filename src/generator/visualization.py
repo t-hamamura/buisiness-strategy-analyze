@@ -139,4 +139,53 @@ class VisualizationGenerator:
         output_path = self.output_dir / filename
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
         plt.close()
-        return output_path 
+        return output_path
+    
+    def create_analysis_charts(self, theme_id, results):
+        """全36テーマに対応した図表生成（雛形）"""
+        charts = []
+        chart_mapping = {
+            'A': ['swot_analysis', 'vrio_framework'],
+            'B': ['business_model_canvas', 'revenue_stream_analysis'],
+            '1': ['market_size_chart', 'tam_sam_som_diagram'],
+            '2': ['pestle_analysis_chart'],
+            '3': ['competitor_positioning_map', '4p_comparison'],
+            '4': ['technology_trend_radar'],
+            '5': ['customer_segmentation_matrix'],
+            '6': ['message_hierarchy_pyramid'],
+            '7': ['customer_journey_map'],
+            '8': ['hypothesis_validation_matrix'],
+            '9': ['brand_identity_prism'],
+            '10': ['gtm_strategy_canvas'],
+            '11': ['ecosystem_map'],
+            '12': ['localization_heatmap'],
+            '13': ['growth_funnel', 'retention_curve'],
+            '14': ['ltv_cac_dashboard'],
+            '15': ['freemium_conversion_funnel'],
+            '16': ['content_channel_matrix'],
+            '17': ['creative_performance_dashboard'],
+            '18': ['pr_timeline'],
+            '19': ['media_mix_allocation'],
+            '20': ['youtube_analytics_dashboard'],
+            '21': ['instagram_engagement_metrics'],
+            '22': ['twitter_analytics_dashboard'],
+            '23': ['tiktok_performance_metrics'],
+            '24': ['affiliate_network_map'],
+            '25': ['influencer_impact_matrix'],
+            '26': ['customer_success_journey'],
+            '27': ['martech_stack_diagram'],
+            '28': ['sales_enablement_framework'],
+            '29': ['kpi_dashboard'],
+            '30': ['org_structure_diagram'],
+            '31': ['decision_flow_chart'],
+            '32': ['learning_loop_diagram'],
+            '33': ['esg_materiality_matrix'],
+            '34': ['scenario_planning_matrix'],
+            '35': ['crisis_response_flowchart'],
+            'Z': ['integrated_strategy_map', 'executive_dashboard']
+        }
+        if theme_id in chart_mapping:
+            for chart_type in chart_mapping[theme_id]:
+                # サンプル: ファイル名だけ返す（実装は各メソッドで対応）
+                charts.append(f"outputs/charts/{theme_id}_{chart_type}.png")
+        return charts 
